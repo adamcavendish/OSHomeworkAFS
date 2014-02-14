@@ -9,10 +9,10 @@
 namespace afs {
 
 bool
-fs_create(Env & env, const std::string & filename, int8_t owner_uid, const AttrFlag & flag);
+fs_create(Env & env, const std::string & nodename, int8_t owner_uid, const AttrFlag & flag);
 
 bool
-fs_delete(Env & env, const std::string & filename);
+fs_delete(Env & env, const std::string & nodename);
 
 std::pair<bool, std::vector<char>>
 fs_read(Env & env, int32_t fd, uint64_t size);
@@ -27,7 +27,7 @@ bool
 fs_close(int32_t fd);
 
 bool
-fs_init(const std::string & fs_filename, int32_t fs_size, int32_t fs_block_size);
+fs_init(const std::string & fs_filename, int32_t fs_size, int16_t fs_block_size);
 
 }//namespace afs
 

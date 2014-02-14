@@ -32,12 +32,32 @@ TEST(test, t002) {
     ASSERT_EQ(fscore.m_size, 10240);
     ASSERT_EQ(fscore.m_block_sz, 64);
 
-    auto datread = fscore.blockread(1, 1);
-
-    for(auto && i : datread) {
-        std::cout << (int)i << ' ';
+    std::vector<char> datread;
+    for(auto i = 0; i < 10; ++i) {
+        datread = fscore.blockread(i, 1);
+        std::cout << "block " << i << ": ";
+        for(auto && i : datread) {
+            std::cout << (int)i << ' ';
+        }//for
+        std::cout << std::endl;
     }//for
-    std::cout << std::endl;
+}
+
+TEST(test, t003) {
+    afs::fs_init("abc.fs", 10240, 64);
+
+    FSCore fscore("abc.fs");
+    ASSERT_EQ(fscore.m_size, 10240);
+    ASSERT_EQ(fscore.m_block_sz, 64);
+
+    bool used;
+
+    std::cout << "sizeof(AttrFlag): " << sizeof(AttrFlag) << std::endl;
+    
+    for(auto i = 0; i < 20; ++i) {
+        used = fscore.blockused(i);
+        std::cout << i << ": " << std::boolalpha << used << std::endl;
+    }//for
 }
 
 int main(int argc, char * argv[])

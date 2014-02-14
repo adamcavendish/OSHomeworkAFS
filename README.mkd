@@ -1,3 +1,12 @@
+block\_address: int16
+blocks\_num: int16
+fd: int32
+fs\_size: int32
+block\_sz: int16
+BlockInfo::usedbytes: uint16
+
+
+
 Recommend:
     * fs block size is recommended 64, maximum 32768, minimum 64
 Notes:
@@ -11,10 +20,8 @@ AFS Structure: (sequential)
 * Attribute: '/tmp' tmp dir Attributes (b4)
 
 
-
 * BlockInfo (16 bits, 2 bytes)
-    * int1: used or not
-    * int15: the number of bytes used
+    * uint16: the number of bytes used
 
 * Attribute (136+32 bits, 21 bytes)
     * int8: flag
@@ -22,9 +29,9 @@ AFS Structure: (sequential)
     * INode: index nodes
     * char[15]: node name
 
-* FSInfo (64 bits, 8 bytes)
+* FSInfo (48 bits, 8 bytes)
     * int32: filesystem size
-    * int32: filesystem block size
+    * int16: filesystem block size
 
 * INode (32 bits)
     * int16: block num (how many blocks used)

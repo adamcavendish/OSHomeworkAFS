@@ -11,10 +11,10 @@ namespace afs {
 struct FSInfo {
     static const int c_struct_sz = (
         sizeof(int32_t) +
-        sizeof(int32_t));
+        sizeof(int16_t));
 
     int32_t m_fs_size;
-    int32_t m_fs_block_sz;
+    int16_t m_fs_block_sz;
 };//struct FSInfo
 
 // write helper function
@@ -29,3 +29,4 @@ bprint_str<FSInfo>(const FSInfo & t) {
 }//bprint_str(t)
 
 }//namespace afs
+

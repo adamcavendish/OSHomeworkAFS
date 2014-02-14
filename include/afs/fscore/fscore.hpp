@@ -17,14 +17,38 @@ AFS_PUBLIC:
     ~FSCore() {}
 
     std::vector<char>
-    blockread(uint32_t blockid, std::size_t blocknum);
+    blockread(int16_t blockid, std::size_t blocknum);
 
     void
-    blockwrite(uint32_t blockid, const std::vector<char> & data);
+    blockwrite(int16_t blockid, const std::vector<char> & data);
+
+    void
+    blockformat(int16_t blockid);
+
+    bool
+    blockused(int16_t blockid);
+
+    int32_t
+    fs_size() const
+    { return m_size; }
+
+    int16_t
+    fs_block_sz() const
+    { return m_block_sz; }
+
+    int16_t
+    fs_data_max_sz() const
+    { return m_block_sz - cm_blockinfo_sz; }
+
+AFS_PRIVATE:
+    bool
+    check_range(int16_t blockid) const;
     
 AFS_PRIVATE:
-    uint32_t m_size;
-    uint32_t m_block_sz;
+    const int16_t cm_blockinfo_sz = 2;
+
+    int32_t m_size;
+    int16_t m_block_sz;
     std::fstream m_fsfile;
 };//class FSCore
 
