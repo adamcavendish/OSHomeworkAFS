@@ -1,0 +1,43 @@
+*/useless/
+*/Debug/
+Debug/
+*/Release/
+Release/
+
+# configure file
+.ycm_extra_conf.py
+.ycm_extra_conf.pyc
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+
+# vim
+*.swp
+
+# FLENS library
+FLENS/
+
+# build directories
+*/build/
+build/
+
+# Word Reports
+*.doc
+
+# executables
+*.out
+
+# log files
+*.log
+

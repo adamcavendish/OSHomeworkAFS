@@ -1,0 +1,32 @@
+Recommend:
+    * fs block size is recommended 64, maximum 32768, minimum 64
+Notes:
+    * `{= var}` means alias `var` with the value of this field 
+
+AFS Structure: (sequential)
+* FSInfo (b0)
+* Attribute: '/' root dir Attributes (b1)
+* Attribute: '/etc/' etc dir Attributes (b2)
+* Attribute: '/home' home dir Attributes (b3)
+* Attribute: '/tmp' tmp dir Attributes (b4)
+
+
+
+* BlockInfo (16 bits, 2 bytes)
+    * int1: used or not
+    * int15: the number of bytes used
+
+* Attribute (136+32 bits, 21 bytes)
+    * int8: flag
+    * int8: owner uid
+    * INode: index nodes
+    * char[15]: node name
+
+* FSInfo (64 bits, 8 bytes)
+    * int32: filesystem size
+    * int32: filesystem block size
+
+* INode (32 bits)
+    * int16: block num (how many blocks used)
+    * int16[13]: addresses (0-9 1-time-ref blocks, 10-12 2-time-ref blocks)
+
