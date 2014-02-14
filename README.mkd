@@ -1,23 +1,29 @@
 block\_address: int16
+
 blocks\_num: int16
+
 fd: int32
+
 fs\_size: int32
+
 block\_sz: int16
+
 BlockInfo::usedbytes: uint16
 
 
 
-Recommend:
+* Recommend:
     * fs block size is recommended 64, maximum 32768, minimum 64
-Notes:
+
+* Notes:
     * `{= var}` means alias `var` with the value of this field 
 
-AFS Structure: (sequential)
-* FSInfo (b0)
-* Attribute: '/' root dir Attributes (b1)
-* Attribute: '/etc/' etc dir Attributes (b2)
-* Attribute: '/home' home dir Attributes (b3)
-* Attribute: '/tmp' tmp dir Attributes (b4)
+* AFS Structure: (sequential)
+    * FSInfo (b0)
+    * Attribute: '/' root dir Attributes (b1)
+    * Attribute: '/etc/' etc dir Attributes (b2)
+    * Attribute: '/home' home dir Attributes (b3)
+    * Attribute: '/tmp' tmp dir Attributes (b4)
 
 
 * BlockInfo (16 bits, 2 bytes)
