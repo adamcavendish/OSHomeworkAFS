@@ -3,6 +3,7 @@
 // STL
 #include <string>
 #include <memory>
+#include <algorithm>
 #include <iostream>
 #include <vector>
 // C-STL
@@ -19,7 +20,7 @@ struct Attribute {
             sizeof(AttrFlag) +
             sizeof(int8_t) +
             INode::c_struct_sz +
-            sizeof(int8_t) * 15);
+            sizeof(char) * 15);
 
     AttrFlag m_flag;
     int8_t m_owner_uid;
@@ -47,7 +48,47 @@ bprint_str<Attribute>(const Attribute & t) {
     ret.insert(ret.end(), t.m_node_name.begin(), t.m_node_name.end());
     ret.resize(Attribute::c_struct_sz);
     return ret;
-}//bprint_str()
+}//bprint_str(t)
+
+template <typename Iter>
+inline bool
+bscan_str(Attribute & t, Iter beg, Iter end) {
+    // temporaries for rolling back
+    AttrFlag flag;
+    int8_t owner_uid;
+    auto inode = std::make_shared<INode>();
+    std::string node_name;
+
+    Iter tempiter = beg;
+
+    std::advance(tempiter, sizeof(AttrFlag));
+    std::copy(beg, tempiter, (char *)&flag);
+    beg = tempiter;
+
+    std::advance(tempiter, sizeof(int8_t));
+    std::copy(beg, tempiter, (char *)&owner_uid);
+    beg = tempiter;
+
+    std::advance(tempiter, sizeof(INode));
+    bscan_str(*inode, beg, tempiter);
+    beg = tempiter;
+
+    char name[15];
+    std::advance(tempiter, sizeof(char) * 15);
+    std::copy(beg, tempiter, name);
+    node_name = std::string(name);
+    beg = tempiter;
+
+    if(beg == end) {
+        t.m_flag = flag;
+        t.m_owner_uid = owner_uid;
+        t.m_inode = inode;
+        t.m_node_name = node_name;
+        return true;
+    }//if
+
+    return false;
+}//bscan_str(t, data)
 
 }//namespace afs
 

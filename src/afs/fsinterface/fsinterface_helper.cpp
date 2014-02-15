@@ -1,4 +1,8 @@
 #include "afs/fsinterface/fsinterface_helper.hpp"
+// afs
+#include "afs/env/env.hpp"
+#include "afs/inode/inode.hpp"
+#include "afs/fscore/fscore.hpp"
 
 namespace afs {
 

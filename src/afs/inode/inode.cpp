@@ -1,6 +1,8 @@
 #include "afs/inode/inode.hpp"
 // STL
+#include <iostream>
 #include <memory>
+#include <functional>
 // afs
 #include "afs/env/env.hpp"
 #include "afs/fsinterface/fsinterface_helper.hpp"
@@ -50,37 +52,6 @@ INode::add_block(Env & env, int16_t blockid) {
 
     return false;
 }//add_block(blockid)
-
-std::size_t
-INode::size(const Env & env) const {
-    std::size_t ret = 0;
-    // 1-level-index
-    int16_t i = 0;
-    for(i = 0; i < 10; ++i) {
-        if(m_addr[i] == 0)
-            return ret;
-        ++ret;
-    }//for
-
-    // 2-level-index
-    for(i = 10; i < c_addrnum; ++i) {
-        if(m_addr[i] == 0) {
-            return ret;
-        } else {
-            const std::size_t addrnums = env.m_fscore->fs_data_max_sz()/sizeof(int16_t);
-
-            auto level1 = env.m_fscore->blockread(m_addr[i], 1);
-            int16_t * pint16_t = (int16_t *)level1.data();
-            for(std::size_t i = 0; i < addrnums; ++i) {
-                if(pint16_t[i] == 0)
-                    return ret;
-                ++ret;
-            }//for
-        }//if-else
-    }//for
-
-    return ret;
-}//size()
 
 }//namespace afs
 

@@ -17,7 +17,7 @@ AFS_PUBLIC:
     ~FSCore() {}
 
     std::vector<char>
-    blockread(int16_t blockid, std::size_t blocknum);
+    blockread(int16_t blockid, std::size_t blocknum) const;
 
     void
     blockwrite(int16_t blockid, const std::vector<char> & data);
@@ -26,7 +26,7 @@ AFS_PUBLIC:
     blockformat(int16_t blockid);
 
     bool
-    blockused(int16_t blockid);
+    blockused(int16_t blockid) const;
 
     int32_t
     fs_size() const
@@ -49,7 +49,7 @@ AFS_PRIVATE:
 
     int32_t m_size;
     int16_t m_block_sz;
-    std::fstream m_fsfile;
+    mutable std::fstream m_fsfile;
 };//class FSCore
 
 }//namespace afs

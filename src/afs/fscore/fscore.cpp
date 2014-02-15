@@ -43,7 +43,7 @@ FSCore::FSCore(const std::string & fsfile) :
 }//FSCore(fsfile)
 
 std::vector<char>
-FSCore::blockread(int16_t blockid, std::size_t blocknum) {
+FSCore::blockread(int16_t blockid, std::size_t blocknum) const {
     // @TODO reading a truck of blocks together
     
     m_fsfile.seekg(m_block_sz * blockid, std::fstream::beg);
@@ -110,7 +110,7 @@ FSCore::blockformat(int16_t blockid) {
 }//blockformat(blockid)
 
 bool
-FSCore::blockused(int16_t blockid) {
+FSCore::blockused(int16_t blockid) const {
     if(!check_range(blockid)) {
         std::cerr << "blockid: `" << blockid << "' out of range" << std::endl;
         std::abort();
