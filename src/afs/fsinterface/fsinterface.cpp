@@ -20,8 +20,9 @@
 namespace afs {
 
 /**
- * create a file/directory depending on the flag(dir or not)
- * return true on success (create on not exist)
+ * @brief create a file/directory depending on the flag(dir or not)
+ *
+ * @return return true on success (create on not exist)
  * return false on failure (there's a file/dir with the same name)
  */
 bool
@@ -65,8 +66,119 @@ fs_create(Env & env, const std::string & nodename, int8_t owner_uid, const AttrF
     return true;
 }//fs_create(env, nodename, owner_uid, flag)
 
-bool
-fs_delete(Env & env, const std::string & nodename);
+/**
+ * @brief delete a file/directory
+ *
+ * @return on success, return 1 
+ *      on no readable/writeable permission, return -1
+ *      on failure nodename not found, return -2
+ */
+int
+fs_delete(Env & env, const std::string & nodename) {
+    /**
+     * @brief check whether node is `nodename`, if it is, format it
+     * @return on success return 1; on permission problem, return -1; on it is not, return 0
+     */
+    auto check_then_format_node = [&](int16_t addr) -> int {
+        Attribute nodeattr;
+        auto attrdat = env.m_fscore->blockread(addr, 1);
+        if(!bscan_str(nodeattr, attrdat.begin(), attrdat.end())) {
+            std::cerr << "fs_delete: node Attribute load error!" << std::endl;
+            std::abort();
+        }//if
+        if(nodeattr.m_node_name == nodename) {
+            if(!isReadable(nodeattr.m_flag) || !isWritable(nodeattr.m_flag)) {
+                return -1;
+            }//if
+            nodeattr.m_inode->format(env);
+            env.m_fscore->blockformat(addr);
+            return 1;
+        }//if
+        return 0;
+    };//lambda check_then_delete_node(addr)
+
+    /**
+     * @brief fill in the blank after the `nodename` is deleted
+     */
+    auto addr_fill_in = [&](INode & inode, int level1, int level2) -> void {
+        if(inode.m_blocks_num == 0)
+            return;
+
+        int16_t filler = -1; // filler is the block address to fillin the blank at level1, level2
+        
+        std::size_t index = 0;
+        // unary function is to get and remove the last block address from inode
+        auto unary = [&](INode & inode, int16_t & block, bool) -> bool {
+            ++index;
+            if(index == (std::size_t)inode.m_blocks_num) {
+                filler = block;
+                block = 0;
+                --inode.m_blocks_num;
+                return false;
+            }//if
+            return true;
+        };//lambda
+        transform(env, inode, 0, unary);
+        if(filler == -1) {
+            std::cerr << "fs_delete: Corrupted INode data structure" << std::endl;
+            std::abort();
+        }//if
+
+        if(level1 < 10) {
+            inode.m_addr[level1] = filler;
+        } else {
+            auto level1data = env.m_fscore->blockread(inode.m_addr[level1], 1);
+            int16_t * pint16_t = (int16_t *)level1data.data();
+            pint16_t[level2] = filler;
+        }//if-else
+    };//lambda addr_fill_in(inode, level1, level2)
+
+    // --------------------------------------------------
+    Attribute attr;
+    auto attrdat = env.m_fscore->blockread(env.m_attr_addr, 1);
+    if(!bscan_str(attr, attrdat.begin(), attrdat.end())) {
+        std::cerr << "fs_delete: parent directory Attribute load error!" << std::endl;
+        std::abort();
+    }//if
+
+    // 1-level-index
+    int16_t i = 0;
+    for(i = 0; i < 10; ++i) {
+        if(attr.m_inode->m_addr[i] == 0)
+            return -2;
+        auto code = check_then_format_node(attr.m_inode->m_addr[i]);
+        if(code == 1) {
+            attr.m_inode->m_addr[i] = 0;
+            --attr.m_inode->m_blocks_num;
+            addr_fill_in(*attr.m_inode, i, -1);
+            return 1;
+        } else if(code == -1) {
+            return -1;
+        }//if-else
+    }//for
+
+    const std::size_t addrnums = env.m_fscore->fs_data_max_sz()/sizeof(int16_t);
+    // 2-level-index
+    for(i = 10; i < INode::c_addrnum; ++i) {
+        auto level1 = env.m_fscore->blockread(attr.m_inode->m_addr[i], 1);
+        int16_t * pint16_t = (int16_t *)level1.data();
+        for(std::size_t j = 0; j < addrnums; ++j) {
+            if(pint16_t[j] == 0)
+                return -2;
+            auto code = check_then_format_node(pint16_t[j]);
+            if(code == 1) {
+                pint16_t[j] = 0;
+                --attr.m_inode->m_blocks_num;
+                addr_fill_in(*attr.m_inode, i, j);
+                return 1;
+            } else if(code == -1) {
+                return -1;
+            }//if-else
+        }//for
+    }//for
+
+    return -2;
+}//fs_delete(env, nodename)
 
 /**
  * @brief works like `cd` in shell, accept `nodename` as absolute path or relative path
@@ -115,10 +227,7 @@ fs_change_directory(Env & env, const std::string & nodename) {
 std::vector<std::pair<int16_t ,std::shared_ptr<Attribute>>>
 fs_list_directory(const Env & env) {
     std::vector<std::pair<int16_t, std::shared_ptr<Attribute>>> ret;
-    auto unary = [&](INode & inode, int16_t & block, bool is_one_level_index) -> bool {
-        afs_UNUSED(inode);
-        afs_UNUSED(is_one_level_index);
-
+    auto unary = [&](INode &, int16_t & block, bool) -> bool {
         auto attr = std::make_shared<Attribute>();
         auto dat = env.m_fscore->blockread(block, 1);
         if(bscan_str(*attr, dat.begin(), dat.end())) {

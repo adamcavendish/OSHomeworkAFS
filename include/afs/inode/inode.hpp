@@ -111,16 +111,16 @@ transform(const Env & env, INode & inode, std::size_t start, Unary unary) {
     }//for
 
     // 2-level-index
-    for(i = 10; i < inode.c_addrnum; ++i, ++index) {
+    for(i = 10; i < INode::c_addrnum; ++i, ++index) {
         auto level1 = env.m_fscore->blockread(inode.m_addr[i], 1);
         int16_t * pint16_t = (int16_t *)level1.data();
-        for(std::size_t i = 0; i < addrnums; ++i) {
+        for(std::size_t j = 0; j < addrnums; ++j) {
             if(index < start)
                 continue;
-            if(pint16_t[i] == 0)
-                return std::make_pair(index, pint16_t[i]);
-            if(!unary(inode, pint16_t[i], false))
-                return std::make_pair(index, pint16_t[i]);
+            if(pint16_t[j] == 0)
+                return std::make_pair(index, pint16_t[j]);
+            if(!unary(inode, pint16_t[j], false))
+                return std::make_pair(index, pint16_t[j]);
         }//for
     }//for
 

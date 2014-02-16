@@ -12,7 +12,7 @@ namespace afs {
 bool
 fs_create(Env & env, const std::string & nodename, int8_t owner_uid, const AttrFlag & flag);
 
-bool
+int
 fs_delete(Env & env, const std::string & nodename);
 
 bool

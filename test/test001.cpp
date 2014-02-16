@@ -190,6 +190,11 @@ TEST(test, t007) {
     std::cout << std::endl;
 
     ASSERT_EQ(readstr.second, dat);
+
+    if(fs_delete(env, "testfile") != 1) {
+        std::cerr << "fs_delete fails" << std::endl;
+        FAIL();
+    }//if
 }
 
 int main(int argc, char * argv[])
