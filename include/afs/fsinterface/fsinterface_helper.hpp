@@ -8,7 +8,7 @@
 namespace afs {
 
 int16_t
-alloc_one_block(Env & env);
+alloc_one_block(const Env & env);
 
 }//namespace afs
 

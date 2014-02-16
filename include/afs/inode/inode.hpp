@@ -28,7 +28,7 @@ struct INode {
     { std::fill(m_addr, m_addr + INode::c_addrnum, 0); }
 
     bool
-    add_block(Env & env, int16_t blockid);
+    add_block(const Env & env, int16_t blockid);
 
     std::size_t
     size() const

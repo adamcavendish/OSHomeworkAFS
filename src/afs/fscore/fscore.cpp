@@ -74,7 +74,7 @@ FSCore::blockwrite(int16_t blockid, const std::vector<char> & data) {
         std::abort();
     }//if
 
-    if(data.size()-2 > (std::size_t)m_block_sz) {
+    if(data.size() > (std::size_t)this->fs_data_max_sz()) {
         std::cerr << "FSCore blockwrite error: block too large" << std::endl;
         std::abort();
     }//if

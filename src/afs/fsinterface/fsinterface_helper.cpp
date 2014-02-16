@@ -7,7 +7,7 @@
 namespace afs {
 
 int16_t
-alloc_one_block(Env & env) {
+alloc_one_block(const Env & env) {
     auto fs_sz = env.m_fscore->fs_size();
     auto fs_block_sz = env.m_fscore->fs_block_sz();
 
@@ -21,7 +21,4 @@ alloc_one_block(Env & env) {
 }//alloc_one_block(env)
     
 }//namespace afs
-
-
-
 

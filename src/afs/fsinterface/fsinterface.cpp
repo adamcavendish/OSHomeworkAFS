@@ -1,12 +1,18 @@
 #include "afs/fsinterface/fsinterface.hpp"
 // STL
 #include <fstream>
+#include <algorithm>
+#include <iterator>
 #include <iostream>
 #include <memory>
 // C-STL
 #include <cstdio>
+// Boost
+#include <boost/tokenizer.hpp>
 // afs
+#include "ghelper.hpp"
 #include "afs/attribute/attribute.hpp"
+#include "afs/attribute/flag.hpp"
 #include "afs/fsinfo/fsinfo.hpp"
 #include "afs/inode/inode.hpp"
 #include "afs/fsinterface/fsinterface_helper.hpp"
@@ -63,16 +69,41 @@ bool
 fs_delete(Env & env, const std::string & nodename);
 
 /**
- * @brief @TODO
+ * @brief works like `cd` in shell, accept `nodename` as absolute path or relative path
  */
 bool
 fs_change_directory(Env & env, const std::string & nodename) {
-    /*
-    // @TODO
-    env.m_fscore->blockread(1, 1);
-    env.m_cur_path;
-    env.m_cur_inode;
-    */
+    if(nodename[0] == '/') {
+        // preserve for 'commit or roll back'
+        auto attr_addr = env.m_attr_addr;
+        auto cur_path = env.m_cur_path;
+
+        env.m_attr_addr = 1;
+        env.m_cur_path = "/";
+
+        boost::char_separator<char> sep("/");
+        boost::tokenizer<boost::char_separator<char>> toker(nodename, sep);
+        for(auto tok_iter = toker.begin(), tok_end = toker.end();
+                tok_iter != tok_end; ++tok_iter)
+        {
+            if(!fs_change_directory(env, *tok_iter)) {
+                env.m_attr_addr = attr_addr;
+                env.m_cur_path = cur_path;
+                return false;
+            }//if
+        }//for
+        return true;
+    } else {
+        auto nodes = fs_list_directory(env);
+        for(auto && i : nodes) {
+            if(i.second->m_node_name == nodename) {
+                env.m_cur_path += nodename;
+                env.m_attr_addr = i.first;
+                return true;
+            }//if
+        }//for
+    }//if-else
+
     return false;
 }//fs_change_directory(env, nodename)
 
@@ -81,9 +112,9 @@ fs_change_directory(Env & env, const std::string & nodename) {
  *
  * note: a better performance implementation should use a class with a iterator
  */
-std::vector<std::shared_ptr<Attribute>>
+std::vector<std::pair<int16_t ,std::shared_ptr<Attribute>>>
 fs_list_directory(const Env & env) {
-    std::vector<std::shared_ptr<Attribute>> ret;
+    std::vector<std::pair<int16_t, std::shared_ptr<Attribute>>> ret;
     auto unary = [&](INode & inode, int16_t & block, bool is_one_level_index) -> bool {
         afs_UNUSED(inode);
         afs_UNUSED(is_one_level_index);
@@ -91,7 +122,7 @@ fs_list_directory(const Env & env) {
         auto attr = std::make_shared<Attribute>();
         auto dat = env.m_fscore->blockread(block, 1);
         if(bscan_str(*attr, dat.begin(), dat.end())) {
-            ret.push_back(attr);
+            ret.emplace_back(block, attr);
         } else {
             std::cerr << "read Attribute block error in `fs_list_directory`" << std::endl;
             std::abort();
@@ -110,11 +141,159 @@ fs_list_directory(const Env & env) {
     return ret;
 }//fs_list_directory(env)
 
-std::pair<bool, std::vector<char>>
-fs_read(Env & env, const std::string & filename, uint64_t size);
+/**
+ * @brief fs_read reads the `filename` for `size` bytes and return a char vector
+ * @return on success return 1 and the corresponding char vector,
+ *      failure on `filename` does not exist, return -1
+ *      failure on `filename` is a directory, return -2
+ *      failure on `filename` is non-readable, return -3
+ */
+std::pair<int, std::vector<char>>
+fs_read(const Env & env, const std::string & filename, uint64_t size) {
+    std::pair<int, std::vector<char>> ret;
 
-bool
-fs_write(Env & env, const std::string & filename, const std::vector<char> & data);
+    std::shared_ptr<Attribute> fileattr;
+    auto nodelist = fs_list_directory(env);
+    for(auto && i : nodelist) {
+        if(i.second->m_node_name == filename) {
+            if(isDir(i.second->m_flag))
+                return std::make_pair(-2, std::vector<char>());
+            if(!isReadable(i.second->m_flag))
+                return std::make_pair(-3, std::vector<char>());
+            fileattr = i.second;
+            break;
+        }//if
+    }//for
+
+    if(fileattr == nullptr)
+        return std::make_pair(-1, std::vector<char>());
+
+    {
+        auto unary = [&](INode &, int16_t & block, bool) -> bool {
+            auto blockdat = env.m_fscore->blockread(block, 1);
+            ret.second.insert(ret.second.end(), blockdat.begin(), blockdat.end());
+            if(ret.second.size() < size)
+                return true;
+            return false;
+        };//lambda unary
+        transform(env, *fileattr->m_inode, 0, unary);
+    }//plain block
+
+    ret.first = 1;
+    return ret;
+}//fs_read(env, filename, size)
+
+/**
+ * @brief the same interface as other fs_read function(s), specially, read in whole file.
+ */
+std::pair<int, std::vector<char>>
+fs_read(const Env & env, const std::string & filename) {
+    std::pair<int, std::vector<char>> ret;
+
+    std::shared_ptr<Attribute> fileattr;
+    auto nodelist = fs_list_directory(env);
+    for(auto && i : nodelist) {
+        if(i.second->m_node_name == filename) {
+            if(isDir(i.second->m_flag))
+                return std::make_pair(-2, std::vector<char>());
+            if(!isReadable(i.second->m_flag))
+                return std::make_pair(-3, std::vector<char>());
+            fileattr = i.second;
+            break;
+        }//if
+    }//for
+
+    if(fileattr == nullptr)
+        return std::make_pair(-1, std::vector<char>());
+
+    {
+        auto unary = [&](INode &, int16_t & block, bool) -> bool {
+            auto blockdat = env.m_fscore->blockread(block, 1);
+            ret.second.insert(ret.second.end(), blockdat.begin(), blockdat.end());
+            return true;
+        };//lambda unary
+        transform(env, *fileattr->m_inode, 0, unary);
+    }//plain block
+
+    ret.first = 1;
+    return ret;
+}//fs_read(env, filename)
+
+/**
+ * @brief fs_write writes `data` to `filename`. `filename` has to exist in current directory.
+ * @return on success, return 1;
+ *      failure on filename does not exist, return -1;
+ *      failure on filename being a directory, return -2;
+ *      failure on filename being non-writable, return -3;
+ *      failure on no more space, return -4;
+ *      failure on file too big, return -5;
+ */
+int
+fs_write(const Env & env, const std::string & filename, const std::vector<char> & data) {
+    std::shared_ptr<Attribute> fileattr;
+    auto nodelist = fs_list_directory(env);
+    for(auto && i : nodelist) {
+        if(i.second->m_node_name == filename) {
+            if(isDir(i.second->m_flag))
+                return -2;
+            if(!isWritable(i.second->m_flag))
+                return -3;
+            fileattr = i.second;
+            break;
+        }//if
+    }//for
+    
+    if(fileattr == nullptr)
+        return -1;
+
+    // format the file
+    {
+        auto unary = [&](INode &, int16_t & block, bool)
+        { env.m_fscore->blockformat(block); return true; };
+        transform(env, *fileattr->m_inode, 0, unary);
+    }//plain block
+
+    std::vector<int16_t> rollback_blocks;
+    auto rollback = [&] {
+        for(auto && i : rollback_blocks)
+            env.m_fscore->blockformat(i);
+        fileattr->m_inode->m_blocks_num = 0;
+        std::fill(fileattr->m_inode->m_addr, fileattr->m_inode->m_addr + INode::c_addrnum, 0);
+    };//lambda rollback
+
+    auto maxdatsz = env.m_fscore->fs_data_max_sz();
+    auto iter = data.begin();
+    auto iter_tmp = data.begin();
+    auto dist = std::distance(iter, data.end());
+    while(dist > 0) {
+        auto block = alloc_one_block(env);
+        if(block == -1) {
+            rollback();
+            return -4;
+        }//if
+
+        if(dist > maxdatsz) {
+            std::advance(iter_tmp, maxdatsz);
+            dist -= maxdatsz;
+        } else {
+            std::advance(iter_tmp, dist);
+            dist = 0;
+        }//if-else
+
+        auto blockdat = std::vector<char>(iter, iter_tmp);
+        env.m_fscore->blockwrite(block, blockdat);
+        iter = iter_tmp;
+        
+        if(!fileattr->m_inode->add_block(env, block)) {
+            rollback();
+            return -5;
+        }//if
+
+        rollback_blocks.push_back(block);
+    }//while
+
+    return 1;
+}//fs_write(env, filename, data)
 
 bool
 fs_init(const std::string & fs_filename, int32_t fs_size, int16_t fs_block_size) {
@@ -194,6 +373,25 @@ fs_init(const std::string & fs_filename, int32_t fs_size, int16_t fs_block_size)
         }//if
         if(!fs_create(fake_env, "tmp", fake_env.m_cur_uid, flag)) {
             std::cerr << "create /tmp/ failed. Inadequate space." << std::endl;
+        }//if
+    }//plain block
+
+    // create "/etc/passwd" file
+    {
+        if(!fs_change_directory(fake_env, "etc")) {
+            std::cerr << "unexpected cd into /etc/ failed" << std::endl;
+        }//if
+        AttrFlag flag = (AttrFlag)(AttrFlag::afs_read | AttrFlag::afs_write);
+        if(!fs_create(fake_env, "passwd", fake_env.m_cur_uid, flag)) {
+            std::cerr << "create /etc/passwd failed. Inadequate space." << std::endl;
+        }//if
+
+        const char passwdstr[] =
+            "root:0\n"
+            "guest:1\n";
+        std::vector<char> passwddat(passwdstr, array_end(passwdstr));
+        if(fs_write(fake_env, "passwd", passwddat) != 1) {
+            std::cerr << "error occurs to writing to /etc/passwd" << std::endl;
         }//if
     }//plain block
 

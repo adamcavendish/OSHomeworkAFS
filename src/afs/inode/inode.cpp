@@ -10,7 +10,7 @@
 namespace afs {
 
 bool
-INode::add_block(Env & env, int16_t blockid) {
+INode::add_block(const Env & env, int16_t blockid) {
     // 1-level-index
     int16_t i = 0;
     for(i = 0; i < 10; ++i) {
@@ -26,7 +26,6 @@ INode::add_block(Env & env, int16_t blockid) {
         if(m_addr[i] == 0) {
             int16_t block = alloc_one_block(env);
             if(block == -1) {
-                std::cerr << "Block Alloc Failed, disk space inadequate." << std::endl;
                 return false;
             }//if
             std::vector<char> blockdat(env.m_fscore->fs_data_max_sz(), 0);

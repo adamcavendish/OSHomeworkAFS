@@ -45,5 +45,13 @@ bscan_str(T & t, Iter beg, Iter end) {
     return false;
 }//bscan_str(t, data)
 
+/**
+ * @brief get an array's end as a pointer. Just a helper function.
+ */
+template <typename T, std::size_t N>
+inline T *
+array_end(T (&arr)[N])
+{ return arr + N; }
+
 }//namespace afs
 
