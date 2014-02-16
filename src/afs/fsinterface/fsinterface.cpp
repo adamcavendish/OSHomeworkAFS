@@ -230,6 +230,7 @@ fs_read(const Env & env, const std::string & filename) {
  */
 int
 fs_write(const Env & env, const std::string & filename, const std::vector<char> & data) {
+    int16_t fileattr_addr;
     std::shared_ptr<Attribute> fileattr;
     auto nodelist = fs_list_directory(env);
     for(auto && i : nodelist) {
@@ -238,6 +239,7 @@ fs_write(const Env & env, const std::string & filename, const std::vector<char> 
                 return -2;
             if(!isWritable(i.second->m_flag))
                 return -3;
+            fileattr_addr = i.first;
             fileattr = i.second;
             break;
         }//if
@@ -247,18 +249,12 @@ fs_write(const Env & env, const std::string & filename, const std::vector<char> 
         return -1;
 
     // format the file
-    {
-        auto unary = [&](INode &, int16_t & block, bool)
-        { env.m_fscore->blockformat(block); return true; };
-        transform(env, *fileattr->m_inode, 0, unary);
-    }//plain block
+    fileattr->m_inode->format(env);
 
-    std::vector<int16_t> rollback_blocks;
-    auto rollback = [&] {
-        for(auto && i : rollback_blocks)
-            env.m_fscore->blockformat(i);
-        fileattr->m_inode->m_blocks_num = 0;
-        std::fill(fileattr->m_inode->m_addr, fileattr->m_inode->m_addr + INode::c_addrnum, 0);
+    // if write fails, we must cleanup all stuffs that we wrote
+    auto rollback = [&](int16_t block) {
+        env.m_fscore->blockformat(block);
+        fileattr->m_inode->format(env);
     };//lambda rollback
 
     auto maxdatsz = env.m_fscore->fs_data_max_sz();
@@ -268,7 +264,7 @@ fs_write(const Env & env, const std::string & filename, const std::vector<char> 
     while(dist > 0) {
         auto block = alloc_one_block(env);
         if(block == -1) {
-            rollback();
+            rollback(block);
             return -4;
         }//if
 
@@ -285,12 +281,13 @@ fs_write(const Env & env, const std::string & filename, const std::vector<char> 
         iter = iter_tmp;
         
         if(!fileattr->m_inode->add_block(env, block)) {
-            rollback();
+            rollback(block);
             return -5;
         }//if
-
-        rollback_blocks.push_back(block);
     }//while
+    
+    auto fileattrdat = bprint_str(*fileattr);
+    env.m_fscore->blockwrite(fileattr_addr, fileattrdat);
 
     return 1;
 }//fs_write(env, filename, data)

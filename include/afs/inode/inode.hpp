@@ -30,6 +30,9 @@ struct INode {
     bool
     add_block(const Env & env, int16_t blockid);
 
+    void
+    format(const Env & env);
+
     std::size_t
     size() const
     { return m_blocks_num; }
