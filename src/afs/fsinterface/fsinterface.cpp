@@ -259,6 +259,7 @@ fs_list_directory(const Env & env) {
 
 /**
  * @brief fs_read reads the `filename` for `size` bytes and return a char vector
+ *
  * @return on success return 1 and the corresponding char vector,
  *      failure on `filename` does not exist, return -1
  *      failure on `filename` is a directory, return -2
@@ -338,6 +339,7 @@ fs_read(const Env & env, const std::string & filename) {
 
 /**
  * @brief fs_write writes `data` to `filename`. `filename` has to exist in current directory.
+ *
  * @return on success, return 1;
  *      failure on filename does not exist, return -1;
  *      failure on filename being a directory, return -2;

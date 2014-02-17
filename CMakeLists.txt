@@ -116,6 +116,28 @@ SET(__SRC__
 )
 ADD_EXECUTABLE(${__TARGET_NAME__} ${__SRC__})
 
+SET(__TARGET_NAME__ afs_adduser)
+SET(__SRC__
+    ./src/afs_adduser/main.cpp
+    ./src/ghelper.cpp
+    ./src/afs/fscore/fscore.cpp
+    ./src/afs/inode/inode.cpp
+    ./src/afs/fsinterface/fsinterface.cpp
+    ./src/afs/fsinterface/fsinterface_helper.cpp
+)
+ADD_EXECUTABLE(${__TARGET_NAME__} ${__SRC__})
+
+SET(__TARGET_NAME__ afs_rmuser)
+SET(__SRC__
+    ./src/afs_rmuser/main.cpp
+    ./src/ghelper.cpp
+    ./src/afs/fscore/fscore.cpp
+    ./src/afs/inode/inode.cpp
+    ./src/afs/fsinterface/fsinterface.cpp
+    ./src/afs/fsinterface/fsinterface_helper.cpp
+)
+ADD_EXECUTABLE(${__TARGET_NAME__} ${__SRC__})
+
 # --------------------------------------------------
 # TESTS
 # --------------------------------------------------

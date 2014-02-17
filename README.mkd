@@ -1,7 +1,10 @@
 # PROJECT: OSHomeworkAFS
 ==========
 
-# Dependencies: boost, GCC-4.8, cmake
+# Dependencies:
+* boost
+* GCC-4.8
+* cmake
 
 # How to build:
 
@@ -46,37 +49,31 @@ make -j4
 * afs\_write:
     * usage: afs\_write [afs\_fsfile] [user] [file\_name]
     * read from stdin, until EOF
-* afs\_adduser [afs\_fsfile] [user] [username]
-* afs\_rmuser [afs\_fsfile] [user] [username]
+* afs\_adduser:
+    * usage: afs\_adduser [afs\_fsfile] [user] [username]
+* afs\_rmuser:
+    * usage: afs\_rmuser [afs\_fsfile] [user] [username]
 
-block\_address: int16
+# Important data size:
+* block\_address: int16
+* blocks\_num: int16
+* fd: int32
+* fs\_size: int32
+* block\_sz: int16
+* BlockInfo::usedbytes: uint16
 
-blocks\_num: int16
-
-fd: int32
-
-fs\_size: int32
-
-block\_sz: int16
-
-BlockInfo::usedbytes: uint16
-
-
-
-* Recommend:
+# Recommend:
     * fs block size is recommended 64, maximum 32768, minimum 64
 
-* Notes:
-    * `{= var}` means alias `var` with the value of this field 
+# AFS Structure: (sequential)
+* FSInfo (block 0)
+* Attribute: '/' root dir Attributes (block 1)
+* Attribute: '/etc/' etc dir Attributes (block 2)
+* Attribute: '/home/' home dir Attributes (block 3)
+* Attribute: '/tmp/' tmp dir Attributes (block 4)
+* Extra Space: (block 5 - end)
 
-* AFS Structure: (sequential)
-    * FSInfo (b0)
-    * Attribute: '/' root dir Attributes (b1)
-    * Attribute: '/etc/' etc dir Attributes (b2)
-    * Attribute: '/home/' home dir Attributes (b3)
-    * Attribute: '/tmp/' tmp dir Attributes (b4)
-
-
+# Impoartant Data Structures:
 * BlockInfo (16 bits, 2 bytes)
     * uint16: the number of bytes used
 

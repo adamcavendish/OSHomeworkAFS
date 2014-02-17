@@ -2,6 +2,7 @@
 // STL
 #include <iostream>
 #include <string>
+#include <map>
 // Boost
 #include <boost/tokenizer.hpp>
 // afs
@@ -11,12 +12,12 @@
 namespace afs {
 
 std::pair<
-    std::unordered_map<std::string, std::size_t>,
-    std::unordered_map<std::size_t, std::string>>
+    std::map<std::string, std::size_t>,
+    std::map<std::size_t, std::string>>
 load_user_uid_map(const std::shared_ptr<FSCore> & fscore) {
     std::pair<
-        std::unordered_map<std::string, std::size_t>,
-        std::unordered_map<std::size_t, std::string>> ret;
+        std::map<std::string, std::size_t>,
+        std::map<std::size_t, std::string>> ret;
 
     Env fake_env;
     fake_env.m_cur_uid = 0; // 0 for root
@@ -55,8 +56,8 @@ load_user_uid_map(const std::shared_ptr<FSCore> & fscore) {
 std::pair<
     Env,
     std::pair<
-        std::unordered_map<std::string, std::size_t>,
-        std::unordered_map<std::size_t, std::string>>
+        std::map<std::string, std::size_t>,
+        std::map<std::size_t, std::string>>
 >
 init_env(const std::string & fsfile, const std::string username) {
     std::shared_ptr<afs::FSCore> fscore;
