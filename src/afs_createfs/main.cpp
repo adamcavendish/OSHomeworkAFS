@@ -17,9 +17,9 @@ int main(int argc, char * argv[]) {
     }//if
 
     std::string fsname(argv[1]);
-    std::size_t fssize(boost::lexical_cast<std::size_t>(argv[1]));
-    std::size_t fs_blocksz(boost::lexical_cast<std::size_t>(argv[2]));
-    if(!afs::fs_init("abc.fs", fssize, fs_blocksz))
+    std::size_t fssize(boost::lexical_cast<std::size_t>(argv[2]));
+    std::size_t fs_blocksz(boost::lexical_cast<std::size_t>(argv[3]));
+    if(!afs::fs_init(fsname, fssize, fs_blocksz))
         return EXIT_FAILURE;
 
     return 0;
