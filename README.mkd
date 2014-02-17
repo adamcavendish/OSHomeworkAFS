@@ -1,3 +1,21 @@
+# PROJECT: OSHomeworkAFS
+==========
+
+# Dependencies: boost, GCC-4.8, cmake
+
+# How to build:
+
+```
+mkdir build/
+cd build/
+cmake ..
+make -j4
+```
+
+# Usage:
+    
+
+# Documentation:
 * afs\_interactive:
     * login [user]
     * ls
@@ -12,6 +30,8 @@
     * rmuser [username]
     * help
         * print help
+* afs\_createfs:
+    * usage: afs\_createfs [afs\_fsfile] [fs\_size] [fs\_block\_size]
 * afs\_ls:
     * usage: afs\_ls [afs\_fsfile] [user] [path]
 * afs\_chmod:

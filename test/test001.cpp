@@ -3,6 +3,8 @@
 #include <fstream>
 #include <algorithm>
 #include <iterator>
+// Boost
+#include <boost/lexical_cast.hpp>
 // gtest
 #include <gtest/gtest.h>
 // afs
@@ -12,12 +14,15 @@ using namespace afs;
 int * gargc;
 char ** gargv;
 
+std::size_t gfs_size = 10240;
+std::size_t gfs_blocksz = 64;
+
 TEST(test, t001) {
-    afs::fs_init("abc.fs", 10240, 64);
+    afs::fs_init("abc.fs", gfs_size, gfs_blocksz);
 
     FSCore fscore("abc.fs");
-    ASSERT_EQ(fscore.fs_size(), 10240);
-    ASSERT_EQ(fscore.fs_block_sz(), 64);
+    ASSERT_EQ(fscore.fs_size(), gfs_size);
+    ASSERT_EQ(fscore.fs_block_sz(), gfs_blocksz);
 
     std::vector<char> dat { 1, 3, 5, 7, 9 };
     fscore.blockwrite(10, dat);
@@ -32,11 +37,11 @@ TEST(test, t001) {
 }
 
 TEST(test, t002) {
-    afs::fs_init("abc.fs", 10240, 64);
+    afs::fs_init("abc.fs", gfs_size, gfs_blocksz);
 
     FSCore fscore("abc.fs");
-    ASSERT_EQ(fscore.fs_size(), 10240);
-    ASSERT_EQ(fscore.fs_block_sz(), 64);
+    ASSERT_EQ(fscore.fs_size(), gfs_size);
+    ASSERT_EQ(fscore.fs_block_sz(), gfs_blocksz);
 
     std::vector<char> datread;
     for(auto i = 0; i < 10; ++i) {
@@ -50,11 +55,11 @@ TEST(test, t002) {
 }
 
 TEST(test, t003) {
-    afs::fs_init("abc.fs", 10240, 64);
+    afs::fs_init("abc.fs", gfs_size, gfs_blocksz);
 
     FSCore fscore("abc.fs");
-    ASSERT_EQ(fscore.fs_size(), 10240);
-    ASSERT_EQ(fscore.fs_block_sz(), 64);
+    ASSERT_EQ(fscore.fs_size(), gfs_size);
+    ASSERT_EQ(fscore.fs_block_sz(), gfs_blocksz);
 
     bool used;
 
@@ -67,11 +72,11 @@ TEST(test, t003) {
 }
 
 TEST(test, t004) {
-    afs::fs_init("abc.fs", 10240, 64);
+    afs::fs_init("abc.fs", gfs_size, gfs_blocksz);
 
     FSCore fscore("abc.fs");
-    ASSERT_EQ(fscore.fs_size(), 10240);
-    ASSERT_EQ(fscore.fs_block_sz(), 64);
+    ASSERT_EQ(fscore.fs_size(), gfs_size);
+    ASSERT_EQ(fscore.fs_block_sz(), gfs_blocksz);
 
     Attribute rootattr;
     rootattr.m_flag = AttrFlag(AttrFlag::afs_dir | AttrFlag::afs_read | AttrFlag::afs_write);
@@ -94,11 +99,11 @@ TEST(test, t004) {
 }
 
 TEST(test, t005) {
-    afs::fs_init("abc.fs", 10240, 64);
+    afs::fs_init("abc.fs", gfs_size, gfs_blocksz);
 
     auto fscore = std::make_shared<FSCore>("abc.fs");
-    ASSERT_EQ(fscore->fs_size(), 10240);
-    ASSERT_EQ(fscore->fs_block_sz(), 64);
+    ASSERT_EQ(fscore->fs_size(), gfs_size);
+    ASSERT_EQ(fscore->fs_block_sz(), gfs_blocksz);
 
     auto rootattr = std::make_shared<Attribute>();
     auto rootdat = fscore->blockread(1, 1);
@@ -118,11 +123,11 @@ TEST(test, t005) {
 }
 
 TEST(test, t006) {
-    afs::fs_init("abc.fs", 10240, 64);
+    afs::fs_init("abc.fs", gfs_size, gfs_blocksz);
 
     auto fscore = std::make_shared<FSCore>("abc.fs");
-    ASSERT_EQ(fscore->fs_size(), 10240);
-    ASSERT_EQ(fscore->fs_block_sz(), 64);
+    ASSERT_EQ(fscore->fs_size(), gfs_size);
+    ASSERT_EQ(fscore->fs_block_sz(), gfs_blocksz);
 
     Env env;
     env.m_cur_uid = 0;
@@ -135,11 +140,11 @@ TEST(test, t006) {
 }
 
 TEST(test, t007) {
-    afs::fs_init("abc.fs", 10240, 64);
+    afs::fs_init("abc.fs", gfs_size, gfs_blocksz);
 
     auto fscore = std::make_shared<FSCore>("abc.fs");
-    ASSERT_EQ(fscore->fs_size(), 10240);
-    ASSERT_EQ(fscore->fs_block_sz(), 64);
+    ASSERT_EQ(fscore->fs_size(), gfs_size);
+    ASSERT_EQ(fscore->fs_block_sz(), gfs_blocksz);
 
     Env env;
     env.m_cur_uid = 0;
@@ -198,11 +203,11 @@ TEST(test, t007) {
 }
 
 TEST(test, t008) {
-    afs::fs_init("abc.fs", 10240, 64);
+    afs::fs_init("abc.fs", gfs_size, gfs_blocksz);
 
     auto fscore = std::make_shared<FSCore>("abc.fs");
-    ASSERT_EQ(fscore->fs_size(), 10240);
-    ASSERT_EQ(fscore->fs_block_sz(), 64);
+    ASSERT_EQ(fscore->fs_size(), gfs_size);
+    ASSERT_EQ(fscore->fs_block_sz(), gfs_blocksz);
 
     auto usermaps = load_user_uid_map(fscore);
     for(auto i : usermaps.first)
@@ -214,6 +219,11 @@ int main(int argc, char * argv[])
 	testing::InitGoogleTest(&argc, argv);
     gargc = &argc;
     gargv = argv;
+
+    if(argc == 3) {
+        gfs_size = boost::lexical_cast<std::size_t>(argv[1]);
+        gfs_blocksz = boost::lexical_cast<std::size_t>(argv[2]);
+    }//if
 
 	return RUN_ALL_TESTS();
 }//main

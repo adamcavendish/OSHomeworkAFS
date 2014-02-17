@@ -239,13 +239,21 @@ fs_list_directory(const Env & env) {
         return true;
     };//lambda
 
-    Attribute attr;
+    auto attr = std::make_shared<Attribute>();
     auto attrdat = env.m_fscore->blockread(env.m_attr_addr, 1);
-    if(!bscan_str(attr, attrdat.begin(), attrdat.end())) {
+    if(!bscan_str(*attr, attrdat.begin(), attrdat.end())) {
         std::cerr << "fs_list_directory: parent directory Attribute load error!" << std::endl;
         std::abort();
     }//if
-    transform(env, *attr.m_inode, 0, unary);
+
+    if(!isDir(attr->m_flag)) {
+        // if it is a file, return a vector with only self.
+        ret.emplace_back(env.m_attr_addr, attr);
+    } else {
+        // if it is a directory
+        transform(env, *(attr->m_inode), 0, unary);
+    }//if-else
+
     return ret;
 }//fs_list_directory(env)
 
@@ -404,13 +412,13 @@ bool
 fs_init(const std::string & fs_filename, int32_t fs_size, int16_t fs_block_size) {
     if(fs_size % fs_block_size > 0) {
         std::cerr << "fs_size must be a multiple of fs_block_size" << std::endl;
-        std::abort();
+        return false;
     }//if
 
     std::ofstream ofs(fs_filename, std::ofstream::binary);
     if(!ofs.is_open()) {
         std::cerr << "fs_init error: file not found: " << fs_filename << std::endl;
-        return false;
+        std::abort();
     }//if
 
     FSInfo info;

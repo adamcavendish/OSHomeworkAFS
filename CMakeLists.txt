@@ -1,11 +1,9 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 
-SET(CMAKE_CXX_COMPILER g++-4.8)
+SET(CMAKE_CXX_FLAGS "-std=c++11 -Wall -march=native -flto -O3")
+ADD_DEFINITIONS(-DNDEBUG)
 
-# SET(CMAKE_CXX_FLAGS "-std=c++11 -Wall -march=native -flto -O3")
-# ADD_DEFINITIONS(-DNDEBUG)
-
-SET(CMAKE_CXX_FLAGS "-std=c++11 -Wall -march=native -gdwarf-2 -g3")
+# SET(CMAKE_CXX_FLAGS "-std=c++11 -Wall -march=native -gdwarf-2 -g3")
 
 INCLUDE_DIRECTORIES("${CMAKE_SOURCE_DIR}/include/")
 
@@ -38,7 +36,7 @@ LINK_DIRECTORIES("${binary_dir}/")
 # --------------------------------------------------
 
 # PROJECT
-PROJECT(OSHomework4)
+PROJECT(OSHomeworkAFS)
 MESSAGE(STATUS "Project: " ${PROJECT_NAME})
 
 SET(__TARGET_NAME__ afs_ls)
@@ -51,7 +49,6 @@ SET(__SRC__
     ./src/afs/fsinterface/fsinterface_helper.cpp
 )
 ADD_EXECUTABLE(${__TARGET_NAME__} ${__SRC__})
-TARGET_LINK_LIBRARIES(${__TARGET_NAME__} gtest gtest_main pthread)
 
 SET(__TARGET_NAME__ afs_touch)
 SET(__SRC__
@@ -63,7 +60,28 @@ SET(__SRC__
     ./src/afs/fsinterface/fsinterface_helper.cpp
 )
 ADD_EXECUTABLE(${__TARGET_NAME__} ${__SRC__})
-TARGET_LINK_LIBRARIES(${__TARGET_NAME__} gtest gtest_main pthread)
+
+SET(__TARGET_NAME__ afs_createfs)
+SET(__SRC__
+    ./src/afs_createfs/main.cpp
+    ./src/ghelper.cpp
+    ./src/afs/fscore/fscore.cpp
+    ./src/afs/inode/inode.cpp
+    ./src/afs/fsinterface/fsinterface.cpp
+    ./src/afs/fsinterface/fsinterface_helper.cpp
+)
+ADD_EXECUTABLE(${__TARGET_NAME__} ${__SRC__})
+
+SET(__TARGET_NAME__ afs_chmod)
+SET(__SRC__
+    ./src/afs_chmod/main.cpp
+    ./src/ghelper.cpp
+    ./src/afs/fscore/fscore.cpp
+    ./src/afs/inode/inode.cpp
+    ./src/afs/fsinterface/fsinterface.cpp
+    ./src/afs/fsinterface/fsinterface_helper.cpp
+)
+ADD_EXECUTABLE(${__TARGET_NAME__} ${__SRC__})
 
 # --------------------------------------------------
 # TESTS
