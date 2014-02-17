@@ -63,7 +63,7 @@ make -j4
 * BlockInfo::usedbytes: uint16
 
 # Recommend:
-    * fs block size is recommended 64, maximum 32768, minimum 64
+* fs block size is recommended 64, maximum 32768, minimum 64
 
 # AFS Structure: (sequential)
 * FSInfo (block 0)

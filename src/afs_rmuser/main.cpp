@@ -64,6 +64,7 @@ int main(int argc, char * argv[]) {
 void
 printHelp() {
     std::cerr << "usage: afs_rmuser [afs_fsfile] [user] [username]" << std::endl;
-    std::cerr << "example: a" << std::endl;
+    std::cerr << "example: afs_rmuser ./myfs.fs root foouser" << std::endl;
+    std::cerr << "example: afs_rmuser ./myfs.fs root dummyuser" << std::endl;
 }//printHelp()
 
