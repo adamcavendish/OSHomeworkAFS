@@ -24,9 +24,18 @@ namespace afs {
  *
  * @return on success, return 1
  *      failure on there's a file/dir with the same name, return -1
+ *      failure on inadequate space, return -2
+ *      failure on number of files/dirs reaches upper limit, return -3
  */
 int
 fs_create(Env & env, const std::string & nodename, int8_t owner_uid, const AttrFlag & flag) {
+    auto nodelist = fs_list_directory(env);
+    for(auto && i : nodelist) {
+        if(i.second->m_node_name == nodename) {
+            return -1;
+        }//if
+    }//for
+
     if(nodename.find('/', 0) != std::string::npos) {
         std::cerr << "fs_create should not create a file/dir by a absolute path" << std::endl;
         std::abort();
@@ -48,7 +57,7 @@ fs_create(Env & env, const std::string & nodename, int8_t owner_uid, const AttrF
     auto block = alloc_one_block(env);
     if(block == -1) {
         std::cerr << "Block Alloc Failed, disk space inadequate." << std::endl;
-        return false;
+        return -2;
     }//if
     auto blockdat = bprint_str(subnode_attr);
     env.m_fscore->blockwrite(block, blockdat);
@@ -58,7 +67,7 @@ fs_create(Env & env, const std::string & nodename, int8_t owner_uid, const AttrF
             << std::endl;
         // cleanup
         env.m_fscore->blockformat(block);
-        return false;
+        return -3;
     }//if
 
     parent_dat = bprint_str(parent_attr);

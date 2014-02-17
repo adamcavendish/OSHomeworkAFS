@@ -42,10 +42,20 @@ int main(int argc, char * argv[]) {
         return EXIT_FAILURE;
     }//if
     
-    if(!afs::fs_create(all_env.first, filename, all_env.first.m_cur_uid, flag)) {
+    auto create_code = afs::fs_create(all_env.first, filename, all_env.first.m_cur_uid, flag);
+    switch(create_code) {
+    case -1:
         std::cerr << "afs_touch failed, file already exist." << std::endl;
         return EXIT_FAILURE;
-    }//if
+    case -2:
+        std::cerr << "afs_touch failed, filesystem inadequate space" << std::endl;
+        return EXIT_FAILURE;
+    case -3:
+        std::cerr << "afs_touch failed, files/dirs reaches upper limit" << std::endl;
+        return EXIT_FAILURE;
+    default:
+        break;
+    }//switch-case
 
     return 0;
 }//main
