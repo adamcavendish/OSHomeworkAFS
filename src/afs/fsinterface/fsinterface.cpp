@@ -296,6 +296,7 @@ fs_read(const Env & env, const std::string & filename, uint64_t size) {
     }//plain block
 
     ret.first = 1;
+    ret.second.resize(size);
     return ret;
 }//fs_read(env, filename, size)
 

@@ -83,6 +83,39 @@ SET(__SRC__
 )
 ADD_EXECUTABLE(${__TARGET_NAME__} ${__SRC__})
 
+SET(__TARGET_NAME__ afs_rm)
+SET(__SRC__
+    ./src/afs_rm/main.cpp
+    ./src/ghelper.cpp
+    ./src/afs/fscore/fscore.cpp
+    ./src/afs/inode/inode.cpp
+    ./src/afs/fsinterface/fsinterface.cpp
+    ./src/afs/fsinterface/fsinterface_helper.cpp
+)
+ADD_EXECUTABLE(${__TARGET_NAME__} ${__SRC__})
+
+SET(__TARGET_NAME__ afs_read)
+SET(__SRC__
+    ./src/afs_read/main.cpp
+    ./src/ghelper.cpp
+    ./src/afs/fscore/fscore.cpp
+    ./src/afs/inode/inode.cpp
+    ./src/afs/fsinterface/fsinterface.cpp
+    ./src/afs/fsinterface/fsinterface_helper.cpp
+)
+ADD_EXECUTABLE(${__TARGET_NAME__} ${__SRC__})
+
+SET(__TARGET_NAME__ afs_write)
+SET(__SRC__
+    ./src/afs_write/main.cpp
+    ./src/ghelper.cpp
+    ./src/afs/fscore/fscore.cpp
+    ./src/afs/inode/inode.cpp
+    ./src/afs/fsinterface/fsinterface.cpp
+    ./src/afs/fsinterface/fsinterface_helper.cpp
+)
+ADD_EXECUTABLE(${__TARGET_NAME__} ${__SRC__})
+
 # --------------------------------------------------
 # TESTS
 # --------------------------------------------------
