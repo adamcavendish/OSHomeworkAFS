@@ -1,3 +1,34 @@
+* afs\_interactive:
+    * login [user]
+    * ls
+    * cd [path]
+    * chmod [file\_name] [owner] [file\_flag\_number]
+    * touch [file\_name] [file\_flag\_number]
+    * rm [file\_name]
+    * read [file\_name] ([size])
+    * write [file\_name]
+        * usage: read from stdin, until EOF
+    * adduser [username]
+    * rmuser [username]
+    * help
+        * print help
+* afs\_ls:
+    * usage: afs\_ls [afs\_fsfile] [user] [path]
+* afs\_chmod:
+    * usage: afs\_chmod [afs\_fsfile] [user] [file\_name] [owner] [file\_flag\_number]
+* afs\_touch:
+    * usage: afs\_touch [afs\_fsfile] [user] [file\_name] [file\_flag\_number]
+* afs\_rm:
+    * usage: afs\_rm [afs\_fsfile] [user] [file\_name]
+* afs\_read:
+    * usage: afs\_read [afs\_fsfile] [user] [file\_name] ([size])
+    * print to stdout
+* afs\_write:
+    * usage: afs\_write [afs\_fsfile] [user] [file\_name]
+    * read from stdin, until EOF
+* afs\_adduser [afs\_fsfile] [user] [username]
+* afs\_rmuser [afs\_fsfile] [user] [username]
+
 block\_address: int16
 
 blocks\_num: int16
@@ -22,8 +53,8 @@ BlockInfo::usedbytes: uint16
     * FSInfo (b0)
     * Attribute: '/' root dir Attributes (b1)
     * Attribute: '/etc/' etc dir Attributes (b2)
-    * Attribute: '/home' home dir Attributes (b3)
-    * Attribute: '/tmp' tmp dir Attributes (b4)
+    * Attribute: '/home/' home dir Attributes (b3)
+    * Attribute: '/tmp/' tmp dir Attributes (b4)
 
 
 * BlockInfo (16 bits, 2 bytes)

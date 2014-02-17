@@ -197,6 +197,18 @@ TEST(test, t007) {
     }//if
 }
 
+TEST(test, t008) {
+    afs::fs_init("abc.fs", 10240, 64);
+
+    auto fscore = std::make_shared<FSCore>("abc.fs");
+    ASSERT_EQ(fscore->fs_size(), 10240);
+    ASSERT_EQ(fscore->fs_block_sz(), 64);
+
+    auto usermaps = load_user_uid_map(fscore);
+    for(auto i : usermaps.first)
+        std::cout << "user: " << i.first << ", uid: " << i.second << std::endl;
+}
+
 int main(int argc, char * argv[])
 {
 	testing::InitGoogleTest(&argc, argv);

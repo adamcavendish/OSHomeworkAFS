@@ -41,10 +41,38 @@ LINK_DIRECTORIES("${binary_dir}/")
 PROJECT(OSHomework4)
 MESSAGE(STATUS "Project: " ${PROJECT_NAME})
 
+SET(__TARGET_NAME__ afs_ls)
+SET(__SRC__
+    ./src/afs_ls/main.cpp
+    ./src/ghelper.cpp
+    ./src/afs/fscore/fscore.cpp
+    ./src/afs/inode/inode.cpp
+    ./src/afs/fsinterface/fsinterface.cpp
+    ./src/afs/fsinterface/fsinterface_helper.cpp
+)
+ADD_EXECUTABLE(${__TARGET_NAME__} ${__SRC__})
+TARGET_LINK_LIBRARIES(${__TARGET_NAME__} gtest gtest_main pthread)
+
+SET(__TARGET_NAME__ afs_touch)
+SET(__SRC__
+    ./src/afs_touch/main.cpp
+    ./src/ghelper.cpp
+    ./src/afs/fscore/fscore.cpp
+    ./src/afs/inode/inode.cpp
+    ./src/afs/fsinterface/fsinterface.cpp
+    ./src/afs/fsinterface/fsinterface_helper.cpp
+)
+ADD_EXECUTABLE(${__TARGET_NAME__} ${__SRC__})
+TARGET_LINK_LIBRARIES(${__TARGET_NAME__} gtest gtest_main pthread)
+
+# --------------------------------------------------
+# TESTS
+# --------------------------------------------------
 SET(__TEST_NAME__ test001)
 SET(__TARGET_NAME__ test001)
 SET(__SRC__
     ./test/test001.cpp
+    ./src/ghelper.cpp
     ./src/afs/fscore/fscore.cpp
     ./src/afs/inode/inode.cpp
     ./src/afs/fsinterface/fsinterface.cpp

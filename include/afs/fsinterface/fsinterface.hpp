@@ -9,7 +9,7 @@
 
 namespace afs {
 
-bool
+int
 fs_create(Env & env, const std::string & nodename, int8_t owner_uid, const AttrFlag & flag);
 
 int

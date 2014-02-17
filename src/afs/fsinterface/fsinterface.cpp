@@ -22,10 +22,10 @@ namespace afs {
 /**
  * @brief create a file/directory depending on the flag(dir or not)
  *
- * @return return true on success (create on not exist)
- * return false on failure (there's a file/dir with the same name)
+ * @return on success, return 1
+ *      failure on there's a file/dir with the same name, return -1
  */
-bool
+int
 fs_create(Env & env, const std::string & nodename, int8_t owner_uid, const AttrFlag & flag) {
     if(nodename.find('/', 0) != std::string::npos) {
         std::cerr << "fs_create should not create a file/dir by a absolute path" << std::endl;
@@ -70,16 +70,15 @@ fs_create(Env & env, const std::string & nodename, int8_t owner_uid, const AttrF
  * @brief delete a file/directory
  *
  * @return on success, return 1 
- *      on no readable/writeable permission, return -1
- *      on failure nodename not found, return -2
+ *      on failure nodename not found, return -1
  */
 int
 fs_delete(Env & env, const std::string & nodename) {
     /**
      * @brief check whether node is `nodename`, if it is, format it
-     * @return on success return 1; on permission problem, return -1; on it is not, return 0
+     * @return on success return true; on not found, return false
      */
-    auto check_then_format_node = [&](int16_t addr) -> int {
+    auto check_then_format_node = [&](int16_t addr) -> bool {
         Attribute nodeattr;
         auto attrdat = env.m_fscore->blockread(addr, 1);
         if(!bscan_str(nodeattr, attrdat.begin(), attrdat.end())) {
@@ -87,14 +86,11 @@ fs_delete(Env & env, const std::string & nodename) {
             std::abort();
         }//if
         if(nodeattr.m_node_name == nodename) {
-            if(!isReadable(nodeattr.m_flag) || !isWritable(nodeattr.m_flag)) {
-                return -1;
-            }//if
             nodeattr.m_inode->format(env);
             env.m_fscore->blockformat(addr);
-            return 1;
+            return true;
         }//if
-        return 0;
+        return false;
     };//lambda check_then_delete_node(addr)
 
     /**
@@ -145,16 +141,13 @@ fs_delete(Env & env, const std::string & nodename) {
     int16_t i = 0;
     for(i = 0; i < 10; ++i) {
         if(attr.m_inode->m_addr[i] == 0)
-            return -2;
-        auto code = check_then_format_node(attr.m_inode->m_addr[i]);
-        if(code == 1) {
+            return -1;
+        if(check_then_format_node(attr.m_inode->m_addr[i])) {
             attr.m_inode->m_addr[i] = 0;
             --attr.m_inode->m_blocks_num;
             addr_fill_in(*attr.m_inode, i, -1);
             return 1;
-        } else if(code == -1) {
-            return -1;
-        }//if-else
+        }//if
     }//for
 
     const std::size_t addrnums = env.m_fscore->fs_data_max_sz()/sizeof(int16_t);
@@ -164,20 +157,17 @@ fs_delete(Env & env, const std::string & nodename) {
         int16_t * pint16_t = (int16_t *)level1.data();
         for(std::size_t j = 0; j < addrnums; ++j) {
             if(pint16_t[j] == 0)
-                return -2;
-            auto code = check_then_format_node(pint16_t[j]);
-            if(code == 1) {
+                return -1;
+            if(check_then_format_node(pint16_t[j])) {
                 pint16_t[j] = 0;
                 --attr.m_inode->m_blocks_num;
                 addr_fill_in(*attr.m_inode, i, j);
                 return 1;
-            } else if(code == -1) {
-                return -1;
-            }//if-else
+            }//if
         }//for
     }//for
 
-    return -2;
+    return -1;
 }//fs_delete(env, nodename)
 
 /**

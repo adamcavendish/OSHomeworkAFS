@@ -2,10 +2,19 @@
 // STL
 #include <vector>
 #include <string>
+#include <type_traits>
+#include <memory>
+#include <unordered_map>
+
+// afs
+#include "helper/array_end.hpp"
 
 #define afs_UNUSED(ident) (void)(ident)
 
 namespace afs {
+
+class FSCore;
+struct Env;
 
 /**
  * print_str() print type T into string
@@ -47,11 +56,27 @@ bscan_str(T & t, Iter beg, Iter end) {
 
 /**
  * @brief get an array's end as a pointer. Just a helper function.
+ *
+ * T[N] normally get N as return value,
+ * specialized for char[N] cases ending up in N-1 for omitting the '\0' in the end.
  */
 template <typename T, std::size_t N>
 inline T *
 array_end(T (&arr)[N])
-{ return arr + N; }
+{ return arr + __array_end<T[N]>::value; }
+
+std::pair<
+    std::unordered_map<std::string, std::size_t>,
+    std::unordered_map<std::size_t, std::string>>
+load_user_uid_map(const std::shared_ptr<FSCore> & fscore);
+
+std::pair<
+    Env,
+    std::pair<
+        std::unordered_map<std::string, std::size_t>,
+        std::unordered_map<std::size_t, std::string>>
+>
+init_env(const std::string & fsfile, const std::string username);
 
 }//namespace afs
 

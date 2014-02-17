@@ -2,6 +2,7 @@
 // STL
 #include <iostream>
 #include <fstream>
+#include <stdexcept>
 #include <vector>
 // C-STL
 #include <cstdlib>
@@ -13,10 +14,8 @@ FSCore::FSCore(const std::string & fsfile) :
     m_block_sz(0),
     m_fsfile(fsfile, std::fstream::in | std::fstream::out | std::fstream::binary)
 {
-    if(!m_fsfile.is_open()) {
-        std::cerr << "FileSystem open error, file not exists: " << fsfile << std::endl;
-        std::abort();
-    }//if
+    if(!m_fsfile.is_open())
+        throw std::runtime_error("FileSystem open error, file not exists: " + fsfile);
 
     // first 16 bits stores block info:
     //  * bit16: the number of bytes used
