@@ -18,7 +18,7 @@ int main(int argc, char * argv[]) {
 
     std::string path(argv[3]);
     std::string new_owner(argv[4]);
-    afs::AttrFlag flag = static_cast<afs::AttrFlag>(boost::lexical_cast<std::size_t>(argv[5]));
+    afs::AttrFlag flag = static_cast<afs::AttrFlag>(boost::lexical_cast<int>(argv[5]));
 
     // if it is a directory, check whether flag contains dir flag
     boost::trim(path);
@@ -55,9 +55,12 @@ int main(int argc, char * argv[]) {
     for(auto && i : nodelist) {
         if(i.second->m_node_name == filename) {
             // check dirflag
-            if((afs::isDir(flag) && afs::isDir(i.second->m_flag)) == false) {
-                std::cerr << "afs_chmod failed, cannot change a directory into file, "
-                    << "or change a file into directory" << std::endl;
+            if(afs::isDir(i.second->m_flag) && !afs::isDir(flag)) {
+                std::cerr << "afs_chmod failed, cannot change a directory into file" << std::endl;
+                return EXIT_FAILURE;
+            }//if
+            if(!afs::isDir(i.second->m_flag) && afs::isDir(flag)) {
+                std::cerr << "afs_chmod failed, cannot change a file into directory" << std::endl;
                 return EXIT_FAILURE;
             }//if
 
@@ -70,6 +73,10 @@ int main(int argc, char * argv[]) {
 
             i.second->m_owner_uid = new_owner_uid;
             i.second->m_flag = flag;
+
+            // write back
+            auto attrdat = bprint_str(*i.second);
+            all_env.first.m_fscore->blockwrite(i.first, attrdat);
             return 0;
         }//if
     }//for
