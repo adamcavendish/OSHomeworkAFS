@@ -109,6 +109,12 @@ fs_delete(Env & env, const std::string & nodename) {
         if(inode.m_blocks_num == 0)
             return;
 
+        if(inode.m_blocks_num == 1) {
+            inode.m_addr[0] = 0;
+            inode.m_blocks_num = 0;
+            return;
+        }//if
+
         int16_t filler = -1; // filler is the block address to fillin the blank at level1, level2
         
         std::size_t index = 0;
@@ -155,6 +161,11 @@ fs_delete(Env & env, const std::string & nodename) {
             attr.m_inode->m_addr[i] = 0;
             --attr.m_inode->m_blocks_num;
             addr_fill_in(*attr.m_inode, i, -1);
+
+            // write back the data;
+            auto attrdatwt = bprint_str(attr);
+            env.m_fscore->blockwrite(env.m_attr_addr, attrdatwt);
+
             return 1;
         }//if
     }//for
@@ -171,6 +182,11 @@ fs_delete(Env & env, const std::string & nodename) {
                 pint16_t[j] = 0;
                 --attr.m_inode->m_blocks_num;
                 addr_fill_in(*attr.m_inode, i, j);
+
+                // write back the data;
+                auto attrdatwt = bprint_str(attr);
+                env.m_fscore->blockwrite(env.m_attr_addr, attrdatwt);
+
                 return 1;
             }//if
         }//for

@@ -15,8 +15,75 @@ cmake ..
 make -j4
 ```
 
-# Usage:
-    
+# Usage example:
+* first create a filesystem:
+
+```
+./afs_createfs ./myfs.fs 102400 100
+```
+
+* Then you have `/`, `/home`, `/etc`, `/tmp`, `/etc/passwd` in the filesystem by default
+* Default users: `root` and `guest`
+
+* You can use `afs_ls` to see files/directories in a directory:
+
+```
+./afs_ls ./myfs.fs root /
+
+result:
+drw root etc
+drw root home
+drw root tmp
+
+./afs_ls ./myfs.fs root /etc
+
+result:
+-rw root passwd
+```
+
+* You may read from a file:
+
+```
+./afs_read ./myfs.fs root /etc/passwd
+
+result:
+root:0
+guest:1
+```
+
+* You may create a new file:
+
+```
+./afs_touch ./myfs.fs root /tmp/testfile 6
+
+./afs_ls ./myfs.fs root /tmp
+
+result:
+-rw root testfile
+```
+
+* You may write to file (File must exist first)
+* *IMPORTANT* `afs_write` read from `STDIN` until EOF
+
+```
+./afs_write ./myfs.fs root /tmp/testfile
+>> helloworld!
+
+./afs_read ./myfs.fs root /tmp/testfile
+
+result:
+helloworld!
+```
+
+* You may remove a file
+
+```
+./afs_rm ./myfs.fs root /tmp/testfile
+
+./afs_ls ./myfs.fs root /tmp
+```
+
+* All other operations please refer to `Documentaion`
 
 # Documentation:
 * afs\_interactive:

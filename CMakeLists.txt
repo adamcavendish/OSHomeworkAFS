@@ -1,9 +1,9 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 
-SET(CMAKE_CXX_FLAGS "-std=c++11 -Wall -march=native -flto -O3")
-ADD_DEFINITIONS(-DNDEBUG)
+#SET(CMAKE_CXX_FLAGS "-std=c++11 -Wall -march=native -flto -O3")
+#ADD_DEFINITIONS(-DNDEBUG)
 
-# SET(CMAKE_CXX_FLAGS "-std=c++11 -Wall -march=native -gdwarf-2 -g3")
+SET(CMAKE_CXX_FLAGS "-std=c++11 -Wall -march=native -gdwarf-2 -g3")
 
 INCLUDE_DIRECTORIES("${CMAKE_SOURCE_DIR}/include/")
 
